@@ -24,17 +24,27 @@ export function initLifecycle (vm: Component) {
   const options = vm.$options
 
   // locate first non-abstract parent
+  // 查找非静态父组件
   let parent = options.parent
   if (parent && !options.abstract) {
     while (parent.$options.abstract && parent.$parent) {
       parent = parent.$parent
     }
+
+    // 讲当前组件实例添加到父组件 $children 属性中
     parent.$children.push(vm)
   }
 
+  // 设置 父级组件实例
   vm.$parent = parent
+
+  // 设置 根组件实例，如果有父级，则沿用父级的根组件实例；如果没有父亲则为自己
   vm.$root = parent ? parent.$root : vm
 
+  /**
+   * $ 开头未对外暴露
+   * _ 开头对内部使用
+   */
   vm.$children = []
   vm.$refs = {}
 
@@ -311,6 +321,7 @@ export function deactivateChildComponent (vm: Component, direct?: boolean) {
   }
 }
 
+// 从 vm.$options 中获取生命周期钩子列表，遍历列表，执行每一个生命周期钩子，触发钩子函数
 export function callHook (vm: Component, hook: string) {
   const handlers = vm.$options[hook]
   if (handlers) {

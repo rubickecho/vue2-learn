@@ -35,6 +35,7 @@ export function initMixin (Vue: Class<Component>) {
       // internal component options needs special treatment.
       initInternalComponent(vm, options)
     } else {
+      /** 合并属性 */
       vm.$options = mergeOptions(
         resolveConstructorOptions(vm.constructor),
         options || {},
@@ -49,14 +50,16 @@ export function initMixin (Vue: Class<Component>) {
     }
     // expose real self
     vm._self = vm
+
+    // 初始化阶段
     initLifecycle(vm)
     initEvents(vm)
     initRender(vm)
-    callHook(vm, 'beforeCreate')
-    initInjections(vm) // resolve injections before data/props
+    callHook(vm, 'beforeCreate') // 钩子函数
+    initInjections(vm) // resolve injections before data/props，所以在 data，props中可以访问到inject注入的值
     initState(vm)
     initProvide(vm) // resolve provide after data/props
-    callHook(vm, 'created')
+    callHook(vm, 'created') // 钩子
 
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
@@ -65,7 +68,11 @@ export function initMixin (Vue: Class<Component>) {
       measure(`vue ${vm._name} init`, startTag, endTag)
     }
 
+    // 如果用户在实例化 vue 的时候传了 el 选项，则自动开启模板编译阶段与挂载阶段
+    // 如果没有传递 el 选项，则不进入下一个生命周期流程
+    // 用户需要执行vm.$mount 方法，手动开启模板编译和挂载阶段
     if (vm.$options.el) {
+      // 编译阶段
       vm.$mount(vm.$options.el)
     }
   }

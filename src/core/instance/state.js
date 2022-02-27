@@ -57,7 +57,7 @@ export function initState (vm: Component) {
     observe(vm._data = {}, true /* asRootData */)
   }
   if (opts.computed) initComputed(vm, opts.computed)
-  if (opts.watch && opts.watch !== nativeWatch) {
+  if (opts.watch && opts.watch !== nativeWatch) { // 检查是否是原生浏览器watch方法，因为firefox Object.prototype上有一个watch方法
     initWatch(vm, opts.watch)
   }
 }
@@ -73,6 +73,7 @@ function initProps (vm: Component, propsOptions: Object) {
   observerState.shouldConvert = isRoot
   for (const key in propsOptions) {
     keys.push(key)
+    // 验证数据是否正确
     const value = validateProp(key, propsOptions, propsData, vm)
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
@@ -264,12 +265,14 @@ function initMethods (vm: Component, methods: Object) {
           vm
         )
       }
+      // 检查是否重复定义
       if (props && hasOwn(props, key)) {
         warn(
           `Method "${key}" has already been defined as a prop.`,
           vm
         )
       }
+      // 避免和 _, $ 冲突
       if ((key in vm) && isReserved(key)) {
         warn(
           `Method "${key}" conflicts with an existing Vue instance method. ` +
@@ -277,7 +280,7 @@ function initMethods (vm: Component, methods: Object) {
         )
       }
     }
-    vm[key] = methods[key] == null ? noop : bind(methods[key], vm)
+    vm[key] = methods[key] == null ? noop : bind(methods[key], vm) // 绑定到vm实例上
   }
 }
 
