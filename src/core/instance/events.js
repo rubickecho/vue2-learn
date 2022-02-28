@@ -13,6 +13,9 @@ export function initEvents (vm: Component) {
   vm._events = Object.create(null)
   vm._hasHookEvent = false
   // init parent attached events
+  // 初始化的事件指的是父组件在模板中使用 v-on:xxx="xxx" 监听子组件内触发的事件
+  // 在模板编译时，解析到到组件，然后会实例化组件，同时将标签上注册的事件解析成 object 并通过参数传递给子组件，所以在子组件被实例化时，可以在参数中获取父组件向自己的注册的事件
+  // 这些事件最终保存在 vm.$options._parentListeners 中
   const listeners = vm.$options._parentListeners
   if (listeners) {
     updateComponentListeners(vm, listeners)
@@ -39,6 +42,7 @@ export function updateComponentListeners (
   oldListeners: ?Object
 ) {
   target = vm
+  // 给目标组件添加事件
   updateListeners(listeners, oldListeners || {}, add, remove, vm)
 }
 

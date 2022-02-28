@@ -56,8 +56,11 @@ export function resolveInject (inject: any, vm: Component): ?Object {
           result[key] = source._provided[provideKey]
           break
         }
+        // 自下向上查找 inject key 对应的值，直到找到声明组件，则终止查找
         source = source.$parent
       }
+
+      // 如果没有找到，则设置默认值或抛出错误
       if (!source) {
         if ('default' in inject[key]) {
           const provideDefault = inject[key].default
