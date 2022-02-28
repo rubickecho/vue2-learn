@@ -4,6 +4,7 @@ import { emptyNode } from 'core/vdom/patch'
 import { resolveAsset, handleError } from 'core/util/index'
 import { mergeVNodeHook } from 'core/vdom/helpers/index'
 
+// 监听这三个勾子，检查触发指令的心中、更新、删除
 export default {
   create: updateDirectives,
   update: updateDirectives,
@@ -19,8 +20,15 @@ function updateDirectives (oldVnode: VNodeWithData, vnode: VNodeWithData) {
 }
 
 function _update (oldVnode, vnode) {
+  // 对比新旧vnode，然后处理指令是新增 or 更新 or 删除
+
+  // 旧vnode不存在，则为新增
   const isCreate = oldVnode === emptyNode
+
+  // 如果旧vnode存在，新不存在，则为删除
   const isDestroy = vnode === emptyNode
+
+  // 从 vnode options directives 属性获取到当前 vnode 的指令集合
   const oldDirs = normalizeDirectives(oldVnode.data.directives, oldVnode.context)
   const newDirs = normalizeDirectives(vnode.data.directives, vnode.context)
 
@@ -31,18 +39,20 @@ function _update (oldVnode, vnode) {
   for (key in newDirs) {
     oldDir = oldDirs[key]
     dir = newDirs[key]
+
+    // 如果在旧vnode 的指令集合中没有找到，则新增
     if (!oldDir) {
       // new directive, bind
       callHook(dir, 'bind', vnode, oldVnode)
       if (dir.def && dir.def.inserted) {
-        dirsWithInsert.push(dir)
+        dirsWithInsert.push(dir) // 记录新增的指令
       }
     } else {
       // existing directive, update
       dir.oldValue = oldDir.value
       callHook(dir, 'update', vnode, oldVnode)
       if (dir.def && dir.def.componentUpdated) {
-        dirsWithPostpatch.push(dir)
+        dirsWithPostpatch.push(dir) // 记录更新的指令
       }
     }
   }
