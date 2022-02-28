@@ -4,7 +4,7 @@ import { emptyNode } from 'core/vdom/patch'
 import { resolveAsset, handleError } from 'core/util/index'
 import { mergeVNodeHook } from 'core/vdom/helpers/index'
 
-// 监听这三个勾子，检查触发指令的心中、更新、删除
+// 监听这三个勾子，检查触发指令的新增、更新、删除
 export default {
   create: updateDirectives,
   update: updateDirectives,
@@ -45,14 +45,14 @@ function _update (oldVnode, vnode) {
       // new directive, bind
       callHook(dir, 'bind', vnode, oldVnode)
       if (dir.def && dir.def.inserted) {
-        dirsWithInsert.push(dir) // 记录新增的指令
+        dirsWithInsert.push(dir) // 保存需要触发componentUpdated钩子函数的指令列表，保证在完成所有 bind 指令后，再执行指令的 inserted 钩子函数
       }
     } else {
       // existing directive, update
       dir.oldValue = oldDir.value
       callHook(dir, 'update', vnode, oldVnode)
       if (dir.def && dir.def.componentUpdated) {
-        dirsWithPostpatch.push(dir) // 记录更新的指令
+        dirsWithPostpatch.push(dir) // 保存需要触发componentUpdated钩子函数的指令列表，保证在完成所有 update 指令后，再执行指令的 componentUpdated 钩子函数
       }
     }
   }
@@ -64,6 +64,7 @@ function _update (oldVnode, vnode) {
       }
     }
     if (isCreate) {
+      // 合并当前勾子函数和之前 vnode 上的勾子函数
       mergeVNodeHook(vnode.data.hook || (vnode.data.hook = {}), 'insert', callInsert)
     } else {
       callInsert()
@@ -71,6 +72,7 @@ function _update (oldVnode, vnode) {
   }
 
   if (dirsWithPostpatch.length) {
+    // 在执行 componentUpdated 钩子函数之前，先加入一个 postpatch 钩子函数，用于执行 componentUpdated 钩子函数
     mergeVNodeHook(vnode.data.hook || (vnode.data.hook = {}), 'postpatch', () => {
       for (let i = 0; i < dirsWithPostpatch.length; i++) {
         callHook(dirsWithPostpatch[i], 'componentUpdated', vnode, oldVnode)
@@ -78,6 +80,7 @@ function _update (oldVnode, vnode) {
     })
   }
 
+  // 如果不是创建，并且依次对比旧 vnode 的勾子函数如果在新的 vnode 上不存在，则解绑，执行unbind钩子函数
   if (!isCreate) {
     for (key in oldDirs) {
       if (!newDirs[key]) {
@@ -115,10 +118,10 @@ function getRawDirName (dir: VNodeDirective): string {
 }
 
 function callHook (dir, hook, vnode, oldVnode, isDestroy) {
-  const fn = dir.def && dir.def[hook]
+  const fn = dir.def && dir.def[hook] // 从指令集合中取出对应的钩子函数
   if (fn) {
     try {
-      fn(vnode.elm, dir, vnode, oldVnode, isDestroy)
+      fn(vnode.elm, dir, vnode, oldVnode, isDestroy) // 执行钩子函数
     } catch (e) {
       handleError(e, vnode.context, `directive ${dir.name} ${hook} hook`)
     }
