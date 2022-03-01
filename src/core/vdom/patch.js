@@ -33,6 +33,8 @@ const hooks = ['create', 'activate', 'update', 'remove', 'destroy']
 
 function sameVnode (a, b) {
   return (
+    // 如果有设置 key，则直接对比 key，key不同则为不同节点
+    // 通常建议渲染列表，为子项设置 key，这样可以提高 vnode patch 效率，提升性能
     a.key === b.key && (
       (
         a.tag === b.tag &&

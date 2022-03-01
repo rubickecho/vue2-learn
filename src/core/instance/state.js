@@ -172,8 +172,8 @@ function initComputed (vm: Component, computed: Object) {
   const isSSR = isServerRendering()
 
   for (const key in computed) {
-    const userDef = computed[key]
-    const getter = typeof userDef === 'function' ? userDef : userDef.get
+    const userDef = computed[key] // 遍历获取定义的 computed
+    const getter = typeof userDef === 'function' ? userDef : userDef.get // 获取 getter，即监测的函数
     if (process.env.NODE_ENV !== 'production' && getter == null) {
       warn(
         `Getter is missing for computed property "${key}".`,
@@ -183,6 +183,7 @@ function initComputed (vm: Component, computed: Object) {
 
     if (!isSSR) {
       // create internal watcher for the computed property.
+      // 创建内部 watcher
       watchers[key] = new Watcher(
         vm,
         getter || noop,
@@ -194,12 +195,12 @@ function initComputed (vm: Component, computed: Object) {
     // component-defined computed properties are already defined on the
     // component prototype. We only need to define computed properties defined
     // at instantiation here.
-    if (!(key in vm)) {
+    if (!(key in vm)) { // 如果在实例上不存在，则直接定义
       defineComputed(vm, key, userDef)
     } else if (process.env.NODE_ENV !== 'production') {
-      if (key in vm.$data) {
+      if (key in vm.$data) { // 检查是否和 data 名称重复
         warn(`The computed property "${key}" is already defined in data.`, vm)
-      } else if (vm.$options.props && key in vm.$options.props) {
+      } else if (vm.$options.props && key in vm.$options.props) { // 检查是否和 props 名称重复
         warn(`The computed property "${key}" is already defined as a prop.`, vm)
       }
     }
@@ -211,7 +212,8 @@ export function defineComputed (
   key: string,
   userDef: Object | Function
 ) {
-  const shouldCache = !isServerRendering()
+  const shouldCache = !isServerRendering() // 是否缓存
+
   if (typeof userDef === 'function') {
     sharedPropertyDefinition.get = shouldCache
       ? createComputedGetter(key)
@@ -239,10 +241,12 @@ export function defineComputed (
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
 
+// 如果开启缓存 computed 计算结果，则调用该方法，会检查 watcher.dirty, 用于检查是否需要更新
 function createComputedGetter (key) {
   return function computedGetter () {
     const watcher = this._computedWatchers && this._computedWatchers[key]
     if (watcher) {
+      // 如果  dirty 为 ture 时，重新计算值，否则直接返回值
       if (watcher.dirty) {
         watcher.evaluate()
       }
@@ -285,8 +289,10 @@ function initMethods (vm: Component, methods: Object) {
 }
 
 function initWatch (vm: Component, watch: Object) {
+  // key 可以是 object 或 方法名
   for (const key in watch) {
     const handler = watch[key]
+    // 如果是集合，则遍历将每一项都创建 watcher
     if (Array.isArray(handler)) {
       for (let i = 0; i < handler.length; i++) {
         createWatcher(vm, key, handler[i])
@@ -297,12 +303,30 @@ function initWatch (vm: Component, watch: Object) {
   }
 }
 
+/**
+  处理下面几种情况：
+  watch: {
+    data1: function (newV, oldV) {
+      // TODO
+    },
+    data2(newV, oldV) {
+        // TODO
+    },
+    data3: {
+        handler: function (newV, oldV) {
+            // TODO
+        },
+        { deep: true, immediate: true }
+    }
+  },
+ */
 function createWatcher (
   vm: Component,
   keyOrFn: string | Function,
   handler: any,
   options?: Object
 ) {
+  // 如果是对象的写法
   if (isPlainObject(handler)) {
     options = handler
     handler = handler.handler

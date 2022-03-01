@@ -116,7 +116,7 @@ export default class Watcher {
 
   /**
    * Add a dependency to this directive.
-   * 记录自己被添加到了哪些 Dep 中
+   * 记录自己被添加到了哪些 Dep
    */
   addDep (dep: Dep) {
     const id = dep.id
@@ -156,7 +156,7 @@ export default class Watcher {
    */
   update () {
     /* istanbul ignore else */
-    if (this.lazy) {
+    if (this.lazy) { // 比如数据更新时，Watcher 通知 computed，触发更新，将 dirty 置为 true，在下次调用 getter 时，会触发更新
       this.dirty = true
     } else if (this.sync) {
       this.run()
@@ -201,8 +201,8 @@ export default class Watcher {
    * This only gets called for lazy watchers.
    */
   evaluate () {
-    this.value = this.get()
-    this.dirty = false
+    this.value = this.get() // 获取数据，对于 compouted 来说就会重新计算值
+    this.dirty = false // 然后置为 false
   }
 
   /**

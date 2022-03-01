@@ -248,6 +248,9 @@ export function genData (el: ASTElement, state: CodegenState): string {
     data += `${genScopedSlots(el.scopedSlots, state)},`
   }
   // component v-model
+  // v-model="message"
+  // 等同于
+  // <child :value="message" @input="function(e){message = e}"></child>
   if (el.model) {
     data += `model:{value:${
       el.model.value
