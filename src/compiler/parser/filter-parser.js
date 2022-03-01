@@ -76,6 +76,7 @@ export function parseFilters (exp: string): string {
   }
 
   if (filters) {
+    // 串行执行过滤器，上一个的执行结果作为下一个的参数
     for (i = 0; i < filters.length; i++) {
       expression = wrapFilter(expression, filters[i])
     }
@@ -84,6 +85,7 @@ export function parseFilters (exp: string): string {
   return expression
 }
 
+// 包装过滤器，返回一个函数 resolveFilter
 function wrapFilter (exp: string, filter: string): string {
   const i = filter.indexOf('(')
   if (i < 0) {
