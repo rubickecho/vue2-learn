@@ -53,6 +53,16 @@ export function initGlobalAPI (Vue: GlobalAPI) {
   // components with in Weex's multi-instance scenarios.
   Vue.options._base = Vue
 
+  /**
+   * src/shared/util.js
+   * export function extend (to: Object, _from: ?Object): Object {
+  for (const key in _from) {
+    to[key] = _from[key]
+  }
+  return to
+}
+   */
+  // Vue.options.components.KeepAlive = keep-alive component，注册到全局
   extend(Vue.options.components, builtInComponents)
 
   initUse(Vue)

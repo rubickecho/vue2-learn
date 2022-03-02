@@ -9,6 +9,7 @@ function getComponentName (opts: ?VNodeComponentOptions): ?string {
   return opts && (opts.Ctor.options.name || opts.tag)
 }
 
+// 支持 include | exclude="a,b" or "a | b"  or [a, b]
 function matches (pattern: string | RegExp | Array<string>, name: string): boolean {
   if (Array.isArray(pattern)) {
     return pattern.indexOf(name) > -1
@@ -40,7 +41,7 @@ function pruneCacheEntry (
   keys: Array<string>,
   current?: VNode
 ) {
-  const cached = cache[key]
+  const cached = cache[key] // 检查当前销毁的实例是否在缓存中存在
   if (cached && cached !== current) {
     cached.componentInstance.$destroy()
   }
@@ -86,7 +87,7 @@ export default {
     if (componentOptions) {
       // check pattern
       const name: ?string = getComponentName(componentOptions)
-      if (name && (
+      if (name && ( // 直接返回
         (this.include && !matches(this.include, name)) ||
         (this.exclude && matches(this.exclude, name))
       )) {
@@ -100,10 +101,10 @@ export default {
         ? componentOptions.Ctor.cid + (componentOptions.tag ? `::${componentOptions.tag}` : '')
         : vnode.key
       if (cache[key]) {
-        vnode.componentInstance = cache[key].componentInstance
+        vnode.componentInstance = cache[key].componentInstance // 取出缓存替换当前实例
         // make current key freshest
         remove(keys, key)
-        keys.push(key)
+        keys.push(key) // 添加到最新缓存位置
       } else {
         cache[key] = vnode
         keys.push(key)
