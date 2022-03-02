@@ -434,7 +434,7 @@ function processOnce (el) {
 }
 
 function processSlot (el) {
-  if (el.tag === 'slot') {
+  if (el.tag === 'slot') { // 子组件
     el.slotName = getBindingAttr(el, 'name')
     if (process.env.NODE_ENV !== 'production' && el.key) {
       warn(

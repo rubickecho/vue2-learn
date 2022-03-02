@@ -20,7 +20,8 @@ export function initRender (vm: Component) {
   const options = vm.$options
   const parentVnode = vm.$vnode = options._parentVnode // the placeholder node in parent tree
   const renderContext = parentVnode && parentVnode.context
-  vm.$slots = resolveSlots(options._renderChildren, renderContext)
+  // options._renderChildren 父 vnode 的 children
+  vm.$slots = resolveSlots(options._renderChildren, renderContext) // 获取父组件上下文
   vm.$scopedSlots = emptyObject
   // bind the createElement fn to this instance
   // so that we get proper render context inside it.
@@ -72,6 +73,8 @@ export function renderMixin (Vue: Class<Component>) {
       }
     }
 
+    // 子组件获取父组件上 scopedSlots vnodes，并且渲染到子组件中
+    // _parentVnode.data.scopedSlots 是父组件通过执行 resolveScopedSlots 返回的对象
     vm.$scopedSlots = (_parentVnode && _parentVnode.data.scopedSlots) || emptyObject
 
     // set parent vnode. this allows render functions to have access

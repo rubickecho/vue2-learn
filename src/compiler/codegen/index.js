@@ -60,7 +60,7 @@ export function genElement (el: ASTElement, state: CodegenState): string {
     return genIf(el, state)
   } else if (el.tag === 'template' && !el.slotTarget) {
     return genChildren(el, state) || 'void 0'
-  } else if (el.tag === 'slot') {
+  } else if (el.tag === 'slot') { // 如果是子组件定义的 slot 标签，则调用 genSlot 处理
     return genSlot(el, state)
   } else {
     // component or element
@@ -464,7 +464,7 @@ function genSlot (el: ASTElement, state: CodegenState): string {
   if (attrs) {
     res += `,${attrs}`
   }
-  if (bind) {
+  if (bind) { // 将绑定的数据对象收集起来，scopeSlot中会用到
     res += `${attrs ? '' : ',null'},${bind}`
   }
   return res + ')'
