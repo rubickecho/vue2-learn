@@ -53,12 +53,12 @@ const patternTypes: Array<Function> = [String, RegExp, Array]
 
 export default {
   name: 'keep-alive',
-  abstract: true,
+  abstract: true, // 静态节点，不会被渲染
 
   props: {
-    include: patternTypes,
-    exclude: patternTypes,
-    max: [String, Number]
+    include: patternTypes, // 包含组件的名称
+    exclude: patternTypes, // 排除组件的名称
+    max: [String, Number] // 最大缓存数量
   },
 
   created () {
@@ -82,6 +82,7 @@ export default {
   },
 
   render () {
+    // 获取默认插槽中的第一个组件节点
     const vnode: VNode = getFirstComponentChild(this.$slots.default)
     const componentOptions: ?VNodeComponentOptions = vnode && vnode.componentOptions
     if (componentOptions) {
@@ -114,6 +115,7 @@ export default {
         }
       }
 
+      // vnode 添加 keep-alive 标识
       vnode.data.keepAlive = true
     }
     return vnode

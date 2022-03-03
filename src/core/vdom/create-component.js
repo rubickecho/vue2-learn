@@ -43,7 +43,7 @@ const componentVNodeHooks = {
         refElm
       )
       child.$mount(hydrating ? vnode.elm : undefined, hydrating)
-    } else if (vnode.data.keepAlive) {
+    } else if (vnode.data.keepAlive) { // 检查到有是一个缓存的组件，需要激活
       // kept-alive components, treat as a patch
       const mountedNode: any = vnode // work around flow
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
@@ -68,16 +68,18 @@ const componentVNodeHooks = {
       componentInstance._isMounted = true
       callHook(componentInstance, 'mounted')
     }
+    // 如果是缓存的组件，需要激活
     if (vnode.data.keepAlive) {
+      // 检查是否已经 mounted
       if (context._isMounted) {
         // vue-router#1212
         // During updates, a kept-alive component's child components may
         // change, so directly walking the tree here may call activated hooks
         // on incorrect children. Instead we push them into a queue which will
         // be processed after the whole patch process ended.
-        queueActivatedComponent(componentInstance)
+        queueActivatedComponent(componentInstance) // 查询激活的组件
       } else {
-        activateChildComponent(componentInstance, true /* direct */)
+        activateChildComponent(componentInstance, true /* direct */) // 立即激活该组件，触发勾子 activated
       }
     }
   },
@@ -85,10 +87,10 @@ const componentVNodeHooks = {
   destroy (vnode: MountedComponentVNode) {
     const { componentInstance } = vnode
     if (!componentInstance._isDestroyed) {
-      if (!vnode.data.keepAlive) {
+      if (!vnode.data.keepAlive) { // 如果不是 keep-alive 缓存组件，直接销毁
         componentInstance.$destroy()
       } else {
-        deactivateChildComponent(componentInstance, true /* direct */)
+        deactivateChildComponent(componentInstance, true /* direct */) // 立即禁用（不是销毁）该组件，触发 deactivated 勾子
       }
     }
   }
